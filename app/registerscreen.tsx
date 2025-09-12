@@ -128,7 +128,7 @@ const SignUpScreen = () => {
         </View>
 
         <View style={styles.inputview}>
-          /
+          
           <CountryPicker
             countryCode={countryCode}
             callingCode={callingCode}

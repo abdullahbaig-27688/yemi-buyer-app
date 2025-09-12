@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   // Tagline
   title: {
     fontSize: 20,
-    fontWeight: 700,
+    fontWeight: "700",
     color: "#202020",
     alignSelf: "center",
     marginBottom: "50%",
