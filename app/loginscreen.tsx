@@ -9,49 +9,33 @@ import Svg, { Path } from "react-native-svg";
 import axios from "axios";
 
 const LoginScreen = ({ navigation }: any) => {
-
   const [email, setEmail] = useState("");
   const [password, setPassord] = useState("");
   const [loading, setLoading] = useState(false);
-  const router=useRouter();
+  const router = useRouter();
 
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please enter both email and password");
       return;
     }
+
     setLoading(true);
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         "https://yemiecom.infolaravel.news/api/v1/auth/login",
-        { email_or_phone: email, password: password }
+        { email_or_phone: email, password }
       );
-      console.log("Login Response:", response.data);
-      if (response.data?.status === true) {
-        Alert.alert("Success", "Login successful!");
-        // Save token if provided
-        // AsyncStorage.setItem("token", response.data.token);
-        router.replace("/(tabs)"); // Navigate to home screen
-      } else {
-        Alert.alert(
-          "Login Failed",
-          response.data?.message || "Invalid credentials"
-        );
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Login Error:", error.response?.data || error.message);
-        Alert.alert(
-          "Error",
-          error.response?.data?.message || "Something went wrong"
-        );
-      } else {
-        console.error("Login Error:", (error as Error).message);
-        Alert.alert(
-          "Error",
-          (error as Error).message || "Something went wrong"
-        );
-      }
+
+      Alert.alert("Success", "Login successful!");
+      router.replace("/(tabs)");
+    } catch (error: any) {
+      Alert.alert(
+        "Login Failed",
+        error.response?.data?.message ?? "Invalid credentials"
+      );
+
+      // Alert.alert("Error", err.msg);
     } finally {
       setLoading(false);
     }
@@ -180,7 +164,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
   },
-   mainview: {
+  mainview: {
     gap: 10,
     marginBottom: 15,
     width: "100%",
