@@ -1,11 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { ImageBackground } from "expo-image";
+import { router } from "expo-router";
 import React from "react";
 import {
   Dimensions,
   FlatList,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -135,8 +137,13 @@ const PRODUCTS = [
 ];
 export default function HomeScreen() {
   return (
+    <View    style={styles.container}>
+
+    
     <FlatList
-      data={PRODUCTS} // 👈 main list (new items as base)
+   
+      //data={PRODUCTS} // 👈 main list (new items as base)
+      showsVerticalScrollIndicator={false}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
         <Pressable style={styles.productCard}>
@@ -184,7 +191,10 @@ export default function HomeScreen() {
           <View style={styles.sectionWrapper}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Categories</Text>
-              <Pressable style={styles.seeAllBtn}>
+              <Pressable
+                style={styles.seeAllBtn}
+                onPress={() => router.navigate("/categoriesscreen")}
+              >
                 <Text style={styles.seeAllText}>See All</Text>
                 <View style={styles.seeAllIconWrap}>
                   <Ionicons name="arrow-forward" size={16} color="#fff" />
@@ -242,7 +252,7 @@ export default function HomeScreen() {
               keyExtractor={(item, idx) => idx.toString()}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingVertical: 12 }}
-              scrollEnabled={false}
+              scrollEnabled={true}
               renderItem={({ item }) => (
                 <View style={styles.circleWrap}>
                   <Image source={{ uri: item }} style={styles.circleImg} />
@@ -252,101 +262,132 @@ export default function HomeScreen() {
           </View>
 
           {/* Section headers before New Items */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>New Item</Text>
-            <Pressable style={styles.seeAllBtn}>
-              <Text style={styles.seeAllText}>See All</Text>
-              <View style={styles.seeAllIconWrap}>
-                <Ionicons name="arrow-forward" size={16} color="#fff" />
-              </View>
-            </Pressable>
+          <View style={styles.wrapper}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>New Item</Text>
+              <Pressable style={styles.seeAllBtn}>
+                <Text style={styles.seeAllText}>See All</Text>
+                <View style={styles.seeAllIconWrap}>
+                  <Ionicons name="arrow-forward" size={16} color="#fff" />
+                </View>
+              </Pressable>
+            </View>
+            <FlatList
+              data={PRODUCTS}
+              horizontal
+              keyExtractor={(item) => item.id + "flash"}
+              showsHorizontalScrollIndicator={false}
+              scrollEnabled={true}
+              renderItem={({ item }) => (
+                <Pressable style={styles.saleCard}>
+                  <Image source={{ uri: item.image }} style={styles.saleImg} />
+                  <Text style={styles.productName}>{item.name}</Text>
+                  <Text style={styles.productPrice}>{item.price}</Text>
+                </Pressable>
+              )}
+            />
           </View>
-        </>
-      }
-      ListFooterComponent={
-        <>
           {/* Flash Sale */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Flash Sale</Text>
-            <Pressable style={styles.seeAllBtn}>
-              <Text style={styles.seeAllText}>See All</Text>
-              <View style={styles.seeAllIconWrap}>
-                <Ionicons name="arrow-forward" size={16} color="#fff" />
-              </View>
-            </Pressable>
-          </View>
-          <FlatList
-            data={PRODUCTS}
-            horizontal
-            keyExtractor={(item) => item.id + "flash"}
-            showsHorizontalScrollIndicator={false}
-            scrollEnabled={false}
-            renderItem={({ item }) => (
-              <Pressable style={styles.saleCard}>
-                <Image source={{ uri: item.image }} style={styles.saleImg} />
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.productPrice}>{item.price}</Text>
+          <View style={styles.wrapper}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Flash Sale</Text>
+              <Pressable
+                style={styles.seeAllBtn}
+                onPress={() => router.navigate("/flashscreen")}
+              >
+                <Text style={styles.seeAllText}>See All</Text>
+                <View style={styles.seeAllIconWrap}>
+                  <Ionicons name="arrow-forward" size={16} color="#fff" />
+                </View>
               </Pressable>
-            )}
-          />
-
+            </View>
+            <FlatList
+              data={PRODUCTS}
+              horizontal={true}
+              keyExtractor={(item) => item.id + "flash"}
+              showsHorizontalScrollIndicator={false}
+              scrollEnabled={true}
+              renderItem={({ item }) => (
+                <Pressable style={styles.saleCard}>
+                  <Image source={{ uri: item.image }} style={styles.saleImg} />
+                  <Text style={styles.productName}>{item.name}</Text>
+                  <Text style={styles.productPrice}>{item.price}</Text>
+                </Pressable>
+              )}
+            />
+          </View>
           {/* Most Popular */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Most Popular</Text>
-            <Pressable style={styles.seeAllBtn}>
-              <Text style={styles.seeAllText}>See All</Text>
-              <View style={styles.seeAllIconWrap}>
-                <Ionicons name="arrow-forward" size={16} color="#fff" />
-              </View>
-            </Pressable>
-          </View>
-          <FlatList
-            data={PRODUCTS}
-            horizontal
-            keyExtractor={(item) => item.id + "popular"}
-            showsHorizontalScrollIndicator={false}
-            scrollEnabled={false}
-            renderItem={({ item }) => (
-              <Pressable style={styles.productCard}>
-                <Image source={{ uri: item.image }} style={styles.productImg} />
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.productPrice}>{item.price}</Text>
+          <View style={styles.wrapper}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Most Popular</Text>
+              <Pressable style={styles.seeAllBtn}>
+                <Text style={styles.seeAllText}>See All</Text>
+                <View style={styles.seeAllIconWrap}>
+                  <Ionicons name="arrow-forward" size={16} color="#fff" />
+                </View>
               </Pressable>
-            )}
-          />
-
+            </View>
+            <FlatList
+              data={PRODUCTS}
+              horizontal
+              keyExtractor={(item) => item.id + "popular"}
+              showsHorizontalScrollIndicator={false}
+              scrollEnabled={true}
+              renderItem={({ item }) => (
+                <Pressable style={styles.productCard}>
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.productImg}
+                  />
+                  <Text style={styles.productName}>{item.name}</Text>
+                  <Text style={styles.productPrice}>{item.price}</Text>
+                </Pressable>
+              )}
+            />
+          </View>
           {/* Just For You */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Just For You</Text>
-            <Pressable style={styles.seeAllBtn}>
-              <Text style={styles.seeAllText}>See All</Text>
-              <View style={styles.seeAllIconWrap}>
-                <Ionicons name="arrow-forward" size={16} color="#fff" />
-              </View>
-            </Pressable>
-          </View>
-          <FlatList
-            data={PRODUCTS}
-            horizontal
-            keyExtractor={(item) => item.id + "foryou"}
-            showsHorizontalScrollIndicator={false}
-            scrollEnabled={false}
-            renderItem={({ item }) => (
-              <Pressable style={styles.productCard}>
-                <Image source={{ uri: item.image }} style={styles.productImg} />
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.productPrice}>{item.price}</Text>
+          <View style={styles.wrapper}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Just For You</Text>
+              <Pressable style={styles.seeAllBtn}>
+                <Text style={styles.seeAllText}>See All</Text>
+                <View style={styles.seeAllIconWrap}>
+                  <Ionicons name="arrow-forward" size={16} color="#fff" />
+                </View>
               </Pressable>
-            )}
-          />
+            </View>
+            <FlatList
+              data={PRODUCTS}
+              horizontal
+              keyExtractor={(item) => item.id + "foryou"}
+              showsHorizontalScrollIndicator={false}
+              scrollEnabled={true}
+              renderItem={({ item }) => (
+                <Pressable style={styles.productCard}>
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.productImg}
+                  />
+                  <Text style={styles.productName}>{item.name}</Text>
+                  <Text style={styles.productPrice}>{item.price}</Text>
+                </Pressable>
+              )}
+            />
+          </View>
         </>
       }
     />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 15 },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingHorizontal: 15,
+    paddingTop: 20,
+  },
   header: {
     marginTop: 50,
     flexDirection: "row",

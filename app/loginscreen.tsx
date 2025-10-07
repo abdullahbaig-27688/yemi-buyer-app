@@ -28,7 +28,7 @@ const LoginScreen = ({ navigation }: any) => {
       );
 
       Alert.alert("Success", "Login successful!");
-      router.replace("/(tabs)");
+      router.push({ pathname: "/(tabs)" });
     } catch (error: any) {
       Alert.alert(
         "Login Failed",

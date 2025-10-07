@@ -1,16 +1,13 @@
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 
-const SplashScreen = () => {
-  const router = useRouter();
+export default function SplashScreen() {
   useEffect(() => {
     const timer = setTimeout(() => {
-       router.replace("/(tabs)"); // 👈 change to "SignUp" if you want
-      
-      
-    }, 4000);
+      router.navigate("/addresssetting");
+    }, 200);
 
     return () => clearTimeout(timer);
   }, []);
@@ -20,20 +17,18 @@ const SplashScreen = () => {
       <Image
         source={require("../assets/images/splash.png")}
         style={styles.logo}
-        contentFit="contain" // 👈 proper way in expo-image
       />
+      
     </View>
   );
-};
-
-export default SplashScreen;
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff", // white background
+    backgroundColor: "#fff",
   },
   logo: {
     height: 400,
