@@ -12,7 +12,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useRouter } from "expo-router";
 import countriesData from "world-countries"; // ✅ install with: yarn add world-countries
+import ShippingHeader from "@/components/SettingHeader"
 
 const ShippingAddressScreen = () => {
   const [country, setCountry] = useState("");
@@ -21,6 +23,7 @@ const ShippingAddressScreen = () => {
   const [postcode, setPostcode] = useState("");
   const [phone, setPhone] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
 
   // ✅ get country names from library
   const countries = countriesData.map((c) => c.name.common).sort();
@@ -34,88 +37,86 @@ const ShippingAddressScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
-        {/* Header */}
-        <Text style={styles.title}>Settings</Text>
-        <Text style={styles.subtitle}>Shipping Address</Text>
+    <View style={styles.container}>
+      {/* Header */}
+      <ShippingHeader title="Settings" subtitle="Shipping Address"  showBack  onBackPress={() => router.back()} />
+      {/* <Text style={styles.title}>Settings</Text>
+      <Text style={styles.subtitle}>Shipping Address</Text> */}
 
-        {/* Country */}
-        <View style={styles.countryRow}>
-          <Text style={styles.label}>Country</Text>
-          <TouchableOpacity
-            style={styles.countrySelect}
-            onPress={() => setModalVisible(true)}
+      {/* Country */}
+      <View style={styles.countryRow}>
+        <Text style={styles.label}>Country</Text>
+        <TouchableOpacity
+          style={styles.countrySelect}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text
+            style={[
+              styles.countryText,
+              country ? styles.countrySelected : null,
+            ]}
           >
-            <Text
-              style={[
-                styles.countryText,
-                country ? styles.countrySelected : null,
-              ]}
-            >
-              {country ? country : "Choose your country"}
-            </Text>
+            {country ? country : "Choose your country"}
+          </Text>
 
-            {/* Change icon based on selection */}
-            {country ? (
-              <Ionicons name="checkmark-circle" size={24} color="#FF6600" />
-            ) : (
-              <Ionicons name="earth" size={24} color="#FF6600" />
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Address */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>Address</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Required"
-            value={address}
-            onChangeText={setAddress}
-          />
-        </View>
-
-        {/* City */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>Town / City</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Required"
-            value={city}
-            onChangeText={setCity}
-          />
-        </View>
-
-        {/* Postcode */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>Postcode</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Required"
-            value={postcode}
-            onChangeText={setPostcode}
-          />
-        </View>
-
-        {/* Phone */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>Phone Number</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Required"
-            keyboardType="phone-pad"
-            value={phone}
-            onChangeText={setPhone}
-          />
-        </View>
-
-        {/* Save Button */}
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save Changes</Text>
+          {/* Change icon based on selection */}
+          {country ? (
+            <Ionicons name="checkmark-circle" size={24} color="#FF6600" />
+          ) : (
+            <Ionicons name="earth" size={24} color="#FF6600" />
+          )}
         </TouchableOpacity>
-        
-      </ScrollView>
+      </View>
+
+      {/* Address */}
+      <View style={styles.inputWrapper}>
+        <Text style={styles.label}>Address</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Required"
+          value={address}
+          onChangeText={setAddress}
+        />
+      </View>
+
+      {/* City */}
+      <View style={styles.inputWrapper}>
+        <Text style={styles.label}>Town / City</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Required"
+          value={city}
+          onChangeText={setCity}
+        />
+      </View>
+
+      {/* Postcode */}
+      <View style={styles.inputWrapper}>
+        <Text style={styles.label}>Postcode</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Required"
+          value={postcode}
+          onChangeText={setPostcode}
+        />
+      </View>
+
+      {/* Phone */}
+      <View style={styles.inputWrapper}>
+        <Text style={styles.label}>Phone Number</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Required"
+          keyboardType="phone-pad"
+          value={phone}
+          onChangeText={setPhone}
+        />
+      </View>
+
+      {/* Save Button */}
+      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+        <Text style={styles.saveButtonText}>Save Changes</Text>
+      </TouchableOpacity>
 
       {/* Country Picker Modal */}
       <Modal visible={modalVisible} animationType="slide" transparent>
@@ -156,7 +157,7 @@ const ShippingAddressScreen = () => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -164,10 +165,11 @@ export default ShippingAddressScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+   flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    paddingTop: 20,
+    justifyContent: "flex-start",
+    paddingHorizontal: 20,
+    paddingVertical: 50
   },
   title: {
     fontSize: 26,
@@ -185,7 +187,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   countryRow: {
-    marginBottom: 20,
+    // marginBottom: 20,
   },
   countrySelect: {
     flexDirection: "row",

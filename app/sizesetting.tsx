@@ -1,12 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-    FlatList,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity
+  FlatList,
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
 } from "react-native";
+import SizeHeader from "@/components/SettingHeader";
 
 const sizes = [
   { id: "1", name: "US" },
@@ -35,9 +36,10 @@ export default function SizeSettingsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Settings</Text>
-      <Text style={styles.subHeader}>Sizes</Text>
+    <View style={styles.container}>
+      <SizeHeader title="Settings" subtitle="Sizes" showBack />
+      {/* <Text style={styles.header}>Settings</Text>
+      <Text style={styles.subHeader}>Sizes</Text> */}
 
       <FlatList
         data={sizes}
@@ -45,7 +47,7 @@ export default function SizeSettingsScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -53,7 +55,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    padding: 20,
+    justifyContent: "flex-start",
+    paddingHorizontal: 20,
+    paddingVertical: 50,
   },
   header: {
     fontSize: 24,

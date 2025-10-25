@@ -2,11 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
     FlatList,
-    SafeAreaView,
+    View,
     StyleSheet,
     Text,
     TouchableOpacity
 } from "react-native";
+import LanguageHeader from "@/components/SettingHeader";
 
 const languages = [
   { id: "1", name: "English" },
@@ -36,9 +37,10 @@ export default function LanguageSettingsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Settings</Text>
-      <Text style={styles.subHeader}>Language</Text>
+    <View style={styles.container}>
+      <LanguageHeader title="Settings" subtitle="Language" showBack />
+      {/* <Text style={styles.header}>Settings</Text>
+      <Text style={styles.subHeader}>Language</Text> */}
 
       <FlatList
         data={languages}
@@ -46,15 +48,17 @@ export default function LanguageSettingsScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+   flex: 1,
     backgroundColor: "#fff",
-    padding: 20,
+    justifyContent: "flex-start",
+    paddingHorizontal: 20,
+    paddingVertical: 50
   },
   header: {
     fontSize: 24,

@@ -5,6 +5,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 
 type HeaderProps = {
   title: string;
+
   onPress: () => void;
 };
 
@@ -12,7 +13,7 @@ const Header: React.FC<HeaderProps> = ({ title, onPress }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      <Pressable onPress={()=>router.back()} style={styles.iconWrapper}>
+      <Pressable onPress={() => router.back()} style={styles.iconWrapper}>
         <Ionicons name="close" size={24} color="#000" />
       </Pressable>
     </View>
@@ -26,13 +27,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    // paddingVertical: 15,
     backgroundColor: "#fff",
   },
   title: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#000",
   },
   iconWrapper: {
     padding: 5,

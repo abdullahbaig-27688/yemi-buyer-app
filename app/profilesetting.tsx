@@ -1,25 +1,30 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-    Image,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { useRouter } from "expo-router";
+import ProfileHeader from "@/components/SettingHeader"
 
 export default function SettingsProfileScreen() {
+  const router=useRouter();
   const [name, setName] = useState("Romina");
   const [email, setEmail] = useState("gmail@example.com");
   const [password, setPassword] = useState("password123");
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <ProfileHeader title="Settings" subtitle="Profile" showBack  onBackPress={()=>router.back()} />
       {/* Header */}
-      <Text style={styles.header}>Settings</Text>
-      <Text style={styles.subHeader}>Your Profile</Text>
+      {/* <Text style={styles.header}>Settings</Text>
+      <Text style={styles.subHeader}>Your Profile</Text> */}
 
       {/* Profile Image with Edit Button */}
       <View style={styles.imageContainer}>
@@ -61,19 +66,20 @@ export default function SettingsProfileScreen() {
       <TouchableOpacity style={styles.saveBtn}>
         <Text style={styles.saveBtnText}>Save Changes</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+     flex: 1,
     backgroundColor: "#fff",
+    justifyContent: "flex-start",
     paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingVertical: 50
   },
   header: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
     marginBottom: 6,
   },
@@ -117,12 +123,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: "center",
-
   },
   saveBtnText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
-    
   },
 });

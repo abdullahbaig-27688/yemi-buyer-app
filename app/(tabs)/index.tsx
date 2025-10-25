@@ -1,3 +1,5 @@
+import { useState,useEffect } from "react";
+import axios from "axios"
 import { Ionicons } from "@expo/vector-icons";
 import { ImageBackground } from "expo-image";
 import { router } from "expo-router";
@@ -136,268 +138,385 @@ const PRODUCTS = [
   },
 ];
 export default function HomeScreen() {
-  return (
-    <View    style={styles.container}>
+  const [newArrivals, setNewArrivals] = useState([]);
+const [discountedProducts, setDiscountedProducts] = useState([]);
+const [justForYou, setJustForYou] = useState([]);
+const [mostDemanded, setMostDemanded] = useState([]);
 
-    
-    <FlatList
-   
-      //data={PRODUCTS} // 👈 main list (new items as base)
-      showsVerticalScrollIndicator={false}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <Pressable style={styles.productCard}>
-          <Image source={{ uri: item.image }} style={styles.productImg} />
-          <Text style={styles.productName}>{item.name}</Text>
-          <Text style={styles.productPrice}>{item.price}</Text>
-        </Pressable>
-      )}
-      ListHeaderComponent={
-        <>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Shop</Text>
-            <View style={styles.inputview}>
-              <TextInput placeholder="Search" />
-              <Image source={require("../../assets/images/camera1.png")} />
-            </View>
-          </View>
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState(null);
 
-          {/* Banner */}
-          <View style={styles.bannerWrapper}>
-            <Swiper
-              autoplay
-              autoplayTimeout={3}
-              dotStyle={styles.dot}
-              activeDotStyle={styles.activeDot}
-            >
-              {BANNERS.map((item) => (
-                <ImageBackground
-                  key={item.id}
-                  source={{ uri: item.image }}
-                  style={styles.bannerSlide}
-                  imageStyle={{ borderRadius: 15 }}
-                >
-                  <View style={styles.bannerTextBox}>
-                    <Text style={styles.bannerTitle}>{item.title}</Text>
-                    <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
-                  </View>
-                </ImageBackground>
-              ))}
-            </Swiper>
-          </View>
 
-          {/* Categories */}
-          <View style={styles.sectionWrapper}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Categories</Text>
-              <Pressable
-                style={styles.seeAllBtn}
-                onPress={() => router.navigate("/categoriesscreen")}
-              >
-                <Text style={styles.seeAllText}>See All</Text>
-                <View style={styles.seeAllIconWrap}>
-                  <Ionicons name="arrow-forward" size={16} color="#fff" />
-                </View>
-              </Pressable>
-            </View>
-            <FlatList
-              data={CATEGORIES}
-              keyExtractor={(item) => item.id}
-              numColumns={2}
-              columnWrapperStyle={{ gap: 12 }}
-              contentContainerStyle={{ gap: 12 }}
-              scrollEnabled={false} // 👈 prevents nested scrolling
-              renderItem={({ item }) => (
-                <Pressable style={styles.catCard}>
-                  <View style={styles.mosaic}>
-                    <View style={styles.row}>
-                      <Image
-                        source={{ uri: item.images[0] }}
-                        style={styles.tile}
-                      />
-                      <Image
-                        source={{ uri: item.images[1] }}
-                        style={styles.tile}
-                      />
-                    </View>
-                    <View style={styles.row}>
-                      <Image
-                        source={{ uri: item.images[2] }}
-                        style={styles.tile}
-                      />
-                      <Image
-                        source={{ uri: item.images[3] }}
-                        style={styles.tile}
-                      />
-                    </View>
-                  </View>
-                  <View style={styles.metaRow}>
-                    <Text style={styles.catName}>{item.title}</Text>
-                    <View style={styles.countPill}>
-                      <Text style={styles.countText}>{item.count}</Text>
-                    </View>
-                  </View>
-                </Pressable>
-              )}
-            />
-          </View>
+useEffect(() => {
+  const fetchAllSections = async () => {
+    try {
+      setLoading(true);
 
-          {/* Top Products */}
-          <View style={styles.wrapper}>
-            <Text style={styles.title}>Top Products</Text>
-            <FlatList
-              data={TOP_PRODUCTS}
-              horizontal
-              keyExtractor={(item, idx) => idx.toString()}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingVertical: 12 }}
-              scrollEnabled={true}
-              renderItem={({ item }) => (
-                <View style={styles.circleWrap}>
-                  <Image source={{ uri: item }} style={styles.circleImg} />
-                </View>
-              )}
-            />
-          </View>
+      const [
+        newArrRes,
+        discRes,
+        justRes,
+        mostRes
+      ] = await Promise.all([
+        axios.get("https://yemi.store/api/v1/products/new-arrival"),
+        axios.get("https://yemi.store/api/v1/products/discounted-product"),
+        axios.get("https://yemi.store/api/v1/products/just-for-you"),
+        axios.get("https://yemi.store/api/v1/products/most-demanded-product"),
+      ]);
 
-          {/* Section headers before New Items */}
-          <View style={styles.wrapper}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>New Item</Text>
-              <Pressable style={styles.seeAllBtn}>
-                <Text style={styles.seeAllText}>See All</Text>
-                <View style={styles.seeAllIconWrap}>
-                  <Ionicons name="arrow-forward" size={16} color="#fff" />
-                </View>
-              </Pressable>
-            </View>
-            <FlatList
-              data={PRODUCTS}
-              horizontal
-              keyExtractor={(item) => item.id + "flash"}
-              showsHorizontalScrollIndicator={false}
-              scrollEnabled={true}
-              renderItem={({ item }) => (
-                <Pressable style={styles.saleCard}>
-                  <Image source={{ uri: item.image }} style={styles.saleImg} />
-                  <Text style={styles.productName}>{item.name}</Text>
-                  <Text style={styles.productPrice}>{item.price}</Text>
-                </Pressable>
-              )}
-            />
-          </View>
-          {/* Flash Sale */}
-          <View style={styles.wrapper}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Flash Sale</Text>
-              <Pressable
-                style={styles.seeAllBtn}
-                onPress={() => router.navigate("/flashscreen")}
-              >
-                <Text style={styles.seeAllText}>See All</Text>
-                <View style={styles.seeAllIconWrap}>
-                  <Ionicons name="arrow-forward" size={16} color="#fff" />
-                </View>
-              </Pressable>
-            </View>
-            <FlatList
-              data={PRODUCTS}
-              horizontal={true}
-              keyExtractor={(item) => item.id + "flash"}
-              showsHorizontalScrollIndicator={false}
-              scrollEnabled={true}
-              renderItem={({ item }) => (
-                <Pressable style={styles.saleCard}>
-                  <Image source={{ uri: item.image }} style={styles.saleImg} />
-                  <Text style={styles.productName}>{item.name}</Text>
-                  <Text style={styles.productPrice}>{item.price}</Text>
-                </Pressable>
-              )}
-            />
-          </View>
-          {/* Most Popular */}
-          <View style={styles.wrapper}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Most Popular</Text>
-              <Pressable style={styles.seeAllBtn}>
-                <Text style={styles.seeAllText}>See All</Text>
-                <View style={styles.seeAllIconWrap}>
-                  <Ionicons name="arrow-forward" size={16} color="#fff" />
-                </View>
-              </Pressable>
-            </View>
-            <FlatList
-              data={PRODUCTS}
-              horizontal
-              keyExtractor={(item) => item.id + "popular"}
-              showsHorizontalScrollIndicator={false}
-              scrollEnabled={true}
-              renderItem={({ item }) => (
-                <Pressable style={styles.productCard}>
-                  <Image
-                    source={{ uri: item.image }}
-                    style={styles.productImg}
-                  />
-                  <Text style={styles.productName}>{item.name}</Text>
-                  <Text style={styles.productPrice}>{item.price}</Text>
-                </Pressable>
-              )}
-            />
-          </View>
-          {/* Just For You */}
-          <View style={styles.wrapper}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Just For You</Text>
-              <Pressable style={styles.seeAllBtn}>
-                <Text style={styles.seeAllText}>See All</Text>
-                <View style={styles.seeAllIconWrap}>
-                  <Ionicons name="arrow-forward" size={16} color="#fff" />
-                </View>
-              </Pressable>
-            </View>
-            <FlatList
-              data={PRODUCTS}
-              horizontal
-              keyExtractor={(item) => item.id + "foryou"}
-              showsHorizontalScrollIndicator={false}
-              scrollEnabled={true}
-              renderItem={({ item }) => (
-                <Pressable style={styles.productCard}>
-                  <Image
-                    source={{ uri: item.image }}
-                    style={styles.productImg}
-                  />
-                  <Text style={styles.productName}>{item.name}</Text>
-                  <Text style={styles.productPrice}>{item.price}</Text>
-                </Pressable>
-              )}
-            />
-          </View>
-        </>
+      setNewArrivals(newArrRes.data.data || newArrRes.data.products || []);
+      setDiscountedProducts(discRes.data.data || discRes.data.products || []);
+      setJustForYou(justRes.data.data || justRes.data.products || []);
+      setMostDemanded(mostRes.data.data || mostRes.data.products || []);
+
+    } catch (err) {
+      console.error("Error fetching home sections:", err);
+      setError("Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchAllSections();
+}, []);
+
+ if (loading) return <Text style={styles.centered}>Loading...</Text>;
+  if (error) return <Text style={[styles.centered, { color: "red" }]}>{error}</Text>;
+
+    const renderProduct = (item) => (
+    <Pressable
+      style={styles.saleCard}
+      onPress={() =>
+        router.push({ pathname: "/productdetails", params: { id: item.id, name: item.name } })
       }
-    />
+    >
+      <Image
+        source={{
+          uri: item.thumbnail_full_url?.path || item.image || "https://via.placeholder.com/150",
+        }}
+        style={styles.saleImg}
+      />
+      <Text style={styles.productName} numberOfLines={1}>
+        {item.name}
+      </Text>
+      <Text style={styles.productPrice}>${item.unit_price || item.price}</Text>
+    </Pressable>
+  );
+
+
+
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Shop</Text>
+        <View style={styles.inputview}>
+          <TextInput placeholder="Search" />
+          <Ionicons name="camera-outline" size={28} />
+          {/* <Image source={require("../../assets/images/camera1.png")} /> */}
+        </View>
+      </View>
+       
+
+      {/* Banner */}
+      <View style={styles.bannerWrapper}>
+        <Swiper
+          autoplay
+          autoplayTimeout={3}
+          dotStyle={styles.dot}
+          activeDotStyle={styles.activeDot}
+        >
+          {BANNERS.map((item) => (
+            <ImageBackground
+              key={item.id}
+              source={{ uri: item.image }}
+              style={styles.bannerSlide}
+              imageStyle={{ borderRadius: 15 }}
+            >
+              <View style={styles.bannerTextBox}>
+                <Text style={styles.bannerTitle}>{item.title}</Text>
+                <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
+              </View>
+            </ImageBackground>
+          ))}
+        </Swiper>
+      </View>
+
+      {/* Categories */}
+      <View style={styles.sectionWrapper}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Categories</Text>
+          <Pressable
+            style={styles.seeAllBtn}
+            onPress={() => router.navigate("/categoriesscreen")}
+          >
+            <Text style={styles.seeAllText}>See All</Text>
+            <View style={styles.seeAllIconWrap}>
+              <Ionicons name="arrow-forward" size={16} color="#fff" />
+            </View>
+          </Pressable>
+        </View>
+        <FlatList
+          data={CATEGORIES}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={{ gap: 12 }}
+          contentContainerStyle={{ gap: 12 }}
+          scrollEnabled={false} // 👈 prevents nested scrolling
+          renderItem={({ item }) => (
+            <Pressable style={styles.catCard}>
+              <View style={styles.mosaic}>
+                <View style={styles.row}>
+                  <Image source={{ uri: item.images[0] }} style={styles.tile} />
+                  <Image source={{ uri: item.images[1] }} style={styles.tile} />
+                </View>
+                <View style={styles.row}>
+                  <Image source={{ uri: item.images[2] }} style={styles.tile} />
+                  <Image source={{ uri: item.images[3] }} style={styles.tile} />
+                </View>
+              </View>
+              <View style={styles.metaRow}>
+                <Text style={styles.catName}>{item.title}</Text>
+                <View style={styles.countPill}>
+                  <Text style={styles.countText}>{item.count}</Text>
+                </View>
+              </View>
+            </Pressable>
+          )}
+        />
+      </View>
+
+      {/* Top Products */}
+      <View style={styles.wrapper}>
+        <Text style={styles.title}>Top Products</Text>
+        <FlatList
+          data={TOP_PRODUCTS}
+          horizontal
+          keyExtractor={(item, idx) => idx.toString()}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingVertical: 12 }}
+          scrollEnabled={true}
+          renderItem={({ item }) => (
+            <View style={styles.circleWrap}>
+              <Image source={{ uri: item }} style={styles.circleImg} />
+            </View>
+          )}
+        />
+      </View>
+
+      {/* Section headers before New Arrivals */}
+      {/* <View style={styles.wrapper}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>New Arrivals</Text>
+          <Pressable
+            style={styles.seeAllBtn}
+            onPress={() => router.navigate("/newarrival")}
+          >
+            <Text style={styles.seeAllText}>See All</Text>
+            <View style={styles.seeAllIconWrap}>
+              <Ionicons name="arrow-forward" size={16} color="#fff" />
+            </View>
+          </Pressable>
+        </View>
+        <FlatList
+          data={PRODUCTS}
+          horizontal
+          keyExtractor={(item) => item.id + "flash"}
+          showsHorizontalScrollIndicator={false}
+          scrollEnabled={true}
+          renderItem={({ item }) => (
+            <Pressable style={styles.saleCard}>
+              <Image source={{ uri: item.image }} style={styles.saleImg} />
+              <Text style={styles.productName}>{item.name}</Text>
+              <Text style={styles.productPrice}>{item.price}</Text>
+            </Pressable>
+          )}
+        />
+      </View> */}
+      {/* Flash Sale Discount */}
+      {/* <View style={styles.wrapper}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Flash Sale</Text>
+          <Pressable
+            style={styles.seeAllBtn}
+            onPress={() => router.navigate("/flashdiscount")}
+          >
+            <Text style={styles.seeAllText}>See All</Text>
+            <View style={styles.seeAllIconWrap}>
+              <Ionicons name="arrow-forward" size={16} color="#fff" />
+            </View>
+          </Pressable>
+        </View>
+        <FlatList
+          data={PRODUCTS}
+          horizontal={true}
+          keyExtractor={(item) => item.id + "flash"}
+          showsHorizontalScrollIndicator={false}
+          scrollEnabled={true}
+          renderItem={({ item }) => (
+            <Pressable style={styles.saleCard}>
+              <Image source={{ uri: item.image }} style={styles.saleImg} />
+              <Text style={styles.productName}>{item.name}</Text>
+              <Text style={styles.productPrice}>{item.price}</Text>
+            </Pressable>
+          )}
+        />
+      </View> */}
+      {/* Most Demanded */}
+      {/* <View style={styles.wrapper}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Most Popular</Text>
+          <Pressable
+            style={styles.seeAllBtn}
+            onPress={() => router.navigate("/mostdemanded")}
+          >
+            <Text style={styles.seeAllText}>See All</Text>
+            <View style={styles.seeAllIconWrap}>
+              <Ionicons name="arrow-forward" size={16} color="#fff" />
+            </View>
+          </Pressable>
+        </View>
+        <FlatList
+          data={PRODUCTS}
+          horizontal
+          keyExtractor={(item) => item.id + "popular"}
+          showsHorizontalScrollIndicator={false}
+          scrollEnabled={true}
+          renderItem={({ item }) => (
+            <Pressable style={styles.saleCard}>
+              <Image source={{ uri: item.image }} style={styles.saleImg} />
+              <Text style={styles.productName}>{item.name}</Text>
+              <Text style={styles.productPrice}>{item.price}</Text>
+            </Pressable>
+          )}
+        />
+      </View> */}
+      {/* Just For You */}
+      {/* <View style={styles.wrapper}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Just For You</Text>
+          <Pressable
+            style={styles.seeAllBtn}
+            onPress={() => router.navigate("/justforyou")}
+          >
+            <Text style={styles.seeAllText}>See All</Text>
+            <View style={styles.seeAllIconWrap}>
+              <Ionicons name="arrow-forward" size={16} color="#fff" />
+            </View>
+          </Pressable>
+        </View>
+        <FlatList
+          data={PRODUCTS}
+          horizontal
+          keyExtractor={(item) => item.id + "foryou"}
+          showsHorizontalScrollIndicator={false}
+          scrollEnabled={true}
+          renderItem={({ item }) => (
+            <Pressable style={styles.saleCard}>
+              <Image source={{ uri: item.image }} style={styles.saleImg} />
+              <Text style={styles.productName}>{item.name}</Text>
+              <Text style={styles.productPrice}>{item.price}</Text>
+            </Pressable>
+          )}
+        />
+      </View> */}
+       {/* Product Sections */}
+      <Section title="New Arrivals" data={newArrivals} router={router} />
+      <Section title="Flash Sale" data={discountedProducts} router={router} />
+      <Section title="Most Popular" data={mostDemanded} router={router} />
+      <Section title="Just For You" data={justForYou} router={router} />
+
+    </ScrollView>
+  );
+
+}
+
+ // Function to handle See All navigation
+  const handleSeeAll = (section) => {
+    switch (section) {
+      case "New Arrivals":
+        router.push("/newarrival");
+        break;
+      case "Flash Sale":
+        router.push("/flashdiscount");
+        break;
+      case "Just For You":
+        router.push("/justforyou");
+        break;
+      case "Most Popular":
+        router.push("/mostdemanded");
+        break;
+      default:
+        router.push("/categoriesscreen");
+    }
+  };
+function Section({ title, data, router }) {
+  if (!data || data.length === 0) return null;
+
+  return (
+    <View style={styles.wrapper}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <Pressable
+          style={styles.seeAllBtn}
+          // onPress={() => router.push({ pathname: "/categoriesscreen", params: { title } })}
+            onPress={() => handleSeeAll(title)}
+        >
+          <Text style={styles.seeAllText}>See All</Text>
+          <View style={styles.seeAllIconWrap}>
+            <Ionicons name="arrow-forward" size={16} color="#fff" />
+          </View>
+        </Pressable>
+      </View>
+      <FlatList
+        data={data}
+        horizontal
+        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+        showsHorizontalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <Pressable
+            style={styles.saleCard}
+            onPress={() =>
+              router.push({ pathname: "/productdetails", params: { id: item.id, name: item.name } })
+            }
+          >
+            <Image
+              source={{
+                uri: item.thumbnail_full_url?.path || item.image || "https://via.placeholder.com/150",
+              }}
+              style={styles.saleImg}
+            />
+            <Text style={styles.productName} numberOfLines={1}>
+              {item.name}
+            </Text>
+            <Text style={styles.productPrice}>${item.unit_price || item.price}</Text>
+          </Pressable>
+        )}
+      />
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 15,
-    paddingTop: 20,
+    paddingVertical: 10,
+    // paddingBottom:10
   },
   header: {
     marginTop: 50,
+    fontSize: 26,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  headerTitle: { fontSize: 22, fontWeight: "700" },
+  headerTitle: { fontSize: 26, fontWeight: "700" },
   inputview: {
     height: 40,
-    width: 240,
+    width: "80%",
     backgroundColor: "#F8F8F8",
     borderRadius: 20,
     flexDirection: "row",
@@ -473,7 +592,16 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontSize: 18, fontWeight: "600" },
   link: { fontSize: 14, color: "#FF5722" },
-  seeAllBtn: { flexDirection: "row", alignItems: "center", gap: 10 },
+  seeAllBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    // borderWidth: 1,
+    borderRadius: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: "#ff7b00ff",
+  },
   seeAllText: { fontSize: 14, fontWeight: "600", color: "#2e2e2e" },
   seeAllIconWrap: {
     width: 28,
@@ -511,8 +639,8 @@ const styles = StyleSheet.create({
   },
   countText: { fontSize: 12, fontWeight: "700", color: "#2F5FFF" },
   // Products
-  productCard: { marginRight: 15, width: 120 },
-  productImg: { width: 120, height: 120, borderRadius: 10 },
+  productCard: { marginRight: 15, width: 120, borderRadius: 10 },
+  productImg: { width: 120, height: 120 },
   productName: { marginTop: 8, fontSize: 14, fontWeight: "500" },
   productPrice: { fontSize: 14, color: "#FF5722", fontWeight: "600" },
   saleCard: {

@@ -7,7 +7,7 @@ const SplashScreen = () => {
   const router = useRouter();
   useEffect(() => {
     const timer = setTimeout(() => {
-       router.replace("/(tabs)"); // 👈 change to "SignUp" if you want
+       router.replace("/splashscreen"); // 👈 change to "SignUp" if you want
       
       
     }, 4000);

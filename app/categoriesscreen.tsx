@@ -95,9 +95,9 @@ export default function CategoriesScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      {/* <View style={styles.header}> */}
+      
         <Header title="All Categories" onPress={() => router.back()} />
-      {/* </View> */}
+      
 
       {/* Tabs */}
       <View style={styles.tabs}>
@@ -153,20 +153,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: 50,
     paddingHorizontal: 15,
+    paddingVertical: 50,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
+
   headerTitle: { fontSize: 20, fontWeight: "bold" },
   tabs: {
     flexDirection: "row",
     justifyContent: "center",
     marginBottom: 20,
+    marginVertical: 16,
   },
   tabButton: {
     paddingVertical: 8,

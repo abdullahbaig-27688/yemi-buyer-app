@@ -1,11 +1,9 @@
-import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
+import { Tabs } from "expo-router";
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { HapticTab } from "@/components/HapticTab";
+import { Ionicons } from "@expo/vector-icons";
+
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -13,22 +11,53 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
-      }}>
+        tabBarStyle: {
+          backgroundColor: "white", // white background
+          borderTopWidth: 2,
+          elevation: 5,
+        },
+        tabBarActiveTintColor: "#FF7A00", // active icon color
+        tabBarInactiveTintColor: "black", // inactive icon color
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Home",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="home-outline" size={28} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="whishList"
+        name="wishlist"
         options={{
-          title: 'whishlist',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Wishlist",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="heart-outline" size={28} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="addcart"
+        options={{
+          title: "Cart",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="cart-outline" size={28} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="person-outline" size={28} color={color} />
+          ),
         }}
       />
     </Tabs>

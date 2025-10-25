@@ -6,7 +6,7 @@ import { StyleSheet, View } from "react-native";
 export default function SplashScreen() {
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.navigate("/addresssetting");
+      router.navigate("/onboardingscreen");
     }, 200);
 
     return () => clearTimeout(timer);
