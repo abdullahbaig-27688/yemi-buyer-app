@@ -1,12 +1,12 @@
 import Input from "@/components/Input";
 import PrimaryButton from "@/components/PrimaryButton";
 import SecoundryButton from "@/components/SecoundryButton";
+import axios from "axios";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import axios from "axios";
 
 const LoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState("");
