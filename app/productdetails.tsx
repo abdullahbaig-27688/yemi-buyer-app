@@ -1,11 +1,13 @@
 import { useCart } from "@/context/CartContext";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   Pressable,
   ScrollView,
@@ -17,27 +19,42 @@ import {
 import RenderHtml from "react-native-render-html";
 
 export default function ProductDetailScreen() {
-  const { name } = useLocalSearchParams(); // get product name from URL
-  const [product, setProduct] = useState(null);
+  const { name } = useLocalSearchParams<{ name: string }>();
+
+  const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const { width } = Dimensions.get("window");
-  const { addToCart } = useCart(); // ✅ use context function
+  const { addToCart } = useCart();
 
+  /* ---------------- FETCH PRODUCT ---------------- */
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
-        const response = await axios.get(
-          `https://yemi.store/api/v1/products/details/${encodeURIComponent(
-            name
-          )}`
+        const token = await AsyncStorage.getItem("buyer_token");
+
+        if (!token) {
+          setError("Please login again");
+          return;
+        }
+
+        const encodedName = encodeURIComponent(String(name));
+
+        const res = await axios.get(
+          `https://yemi.store/api/v1/products/details/${encodedName}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
-        console.log("✅ Product fetched:", response.data);
-        setProduct(response.data);
-      } catch (err) {
-        console.log("❌ API Error:", err);
+
+        setProduct(res.data);
+      } catch (err: any) {
+        console.log(
+          "❌ PRODUCT API ERROR:",
+          err?.response?.data || err.message
+        );
         setError("Failed to load product");
       } finally {
         setLoading(false);
@@ -47,57 +64,92 @@ export default function ProductDetailScreen() {
     if (name) fetchProductDetails();
   }, [name]);
 
-  const handleAddToCart = (product) => {
-    addToCart({
-      id: product.id,
-      title: product.name,
-      image:
-        product.image_full_url?.path ||
-        product.image ||
-        "https://via.placeholder.com/150",
-      price: product.unit_price,
-      quantity: 1,
-    });
-    router.push("/addcart"); // ✅ then navigate
+  /* ---------------- ADD TO CART ---------------- */
+  const handleAddToCart = async () => {
+    if (!product) return;
+
+    try {
+      const token = await AsyncStorage.getItem("buyer_token");
+
+      if (!token) {
+        Alert.alert("Login required", "Please login to add product to cart");
+        return;
+      }
+
+      // 🔥 Backend cart
+      await axios.post(
+        `https://yemi.store/api/v1/cart/add?id=${product.id}&quantity=1`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // 🔥 Local cart
+      addToCart({
+        id: product.id,
+        title: product.name,
+        image:
+          product.thumbnail_full_url?.path ||
+          product.images_full_url?.[0]?.path ||
+          "https://via.placeholder.com/150",
+        price: product.unit_price,
+        quantity: 1,
+      });
+
+      router.push("/addcart");
+    } catch (err: any) {
+      console.log("ADD TO CART ERROR:", err?.response?.data || err.message);
+      Alert.alert("Error", "Failed to add product to cart");
+    }
   };
 
-  if (loading)
+  /* ---------------- GUARDS (VERY IMPORTANT) ---------------- */
+  if (loading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#f97316" />
       </View>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
       <View style={styles.center}>
         <Text style={{ color: "red" }}>{error}</Text>
       </View>
     );
+  }
 
-  if (!product)
+  if (!product) {
     return (
       <View style={styles.center}>
         <Text>No product details available.</Text>
       </View>
     );
+  }
 
+  /* ---------------- SAFE IMAGE ---------------- */
+  const mainImage =
+    product.thumbnail_full_url?.path ||
+    product.images_full_url?.[0]?.path ||
+    "https://via.placeholder.com/400";
+
+  /* ---------------- UI ---------------- */
   return (
     <ScrollView style={styles.container}>
-      {/* Product Image */}
+      {/* Main Image */}
       <Image
-        source={{ uri: product.thumbnail_full_url?.path }}
+        source={{ uri: mainImage }}
         style={styles.mainImage}
         contentFit="cover"
       />
 
-      {/* Product Details */}
       <View style={styles.detailsContainer}>
         <Text style={styles.name}>{product.name}</Text>
 
         <View style={styles.priceRow}>
           <Text style={styles.price}>${product.unit_price}</Text>
-          {/* <Text style={styles.price}>${product.old_price}</Text> */}
           <TouchableOpacity style={styles.sharecard}>
             <Ionicons
               name="return-up-forward-outline"
@@ -107,7 +159,7 @@ export default function ProductDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Render HTML Description */}
+        {/* Description */}
         <View style={{ marginTop: 12 }}>
           <RenderHtml
             contentWidth={width}
@@ -118,10 +170,10 @@ export default function ProductDetailScreen() {
         </View>
 
         {/* Variations */}
-        {product.variation && product.variation.length > 0 && (
+        {product.variation?.length > 0 && (
           <View style={{ marginTop: 24 }}>
             <Text style={styles.sectionTitle}>Available Variations</Text>
-            {product.variation.map((variant, index) => (
+            {product.variation.map((variant: any, index: number) => (
               <View key={index} style={styles.variantCard}>
                 <Text style={styles.variantText}>
                   {variant.type} — ${variant.price}
@@ -131,12 +183,12 @@ export default function ProductDetailScreen() {
           </View>
         )}
 
-        {/* Additional Images */}
-        {product.images_full_url && product.images_full_url.length > 0 && (
+        {/* Gallery */}
+        {product.images_full_url?.length > 0 && (
           <View style={{ marginTop: 24 }}>
             <Text style={styles.sectionTitle}>More Images</Text>
-            <ScrollView horizontal>
-              {product.images_full_url.map((img, idx) => (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {product.images_full_url.map((img: any, idx: number) => (
                 <Image
                   key={idx}
                   source={{ uri: img.path }}
@@ -146,9 +198,9 @@ export default function ProductDetailScreen() {
             </ScrollView>
           </View>
         )}
+
         {/* Bottom Buttons */}
         <View style={styles.bottomButtons}>
-          {/* Wishlist Button */}
           <TouchableOpacity
             onPress={() => setIsWishlisted(!isWishlisted)}
             style={styles.wishlistButton}
@@ -159,12 +211,11 @@ export default function ProductDetailScreen() {
               color={isWishlisted ? "#E53935" : "#555"}
             />
           </TouchableOpacity>
-          <Pressable
-            style={styles.addToCartBtn}
-            onPress={() => handleAddToCart(product)}
-          >
+
+          <Pressable style={styles.addToCartBtn} onPress={handleAddToCart}>
             <Text style={styles.btnText}>Add to Cart</Text>
           </Pressable>
+
           <Pressable style={styles.buyNowBtn}>
             <Text style={styles.btnText}>Buy Now</Text>
           </Pressable>
@@ -174,18 +225,12 @@ export default function ProductDetailScreen() {
   );
 }
 
+/* ---------------- STYLES ---------------- */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
   mainImage: { width: "100%", height: 420 },
-  detailsContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
+  detailsContainer: { paddingHorizontal: 20, paddingVertical: 16 },
   name: { fontSize: 24, fontWeight: "700", marginBottom: 6 },
   priceRow: {
     flexDirection: "row",
@@ -194,19 +239,8 @@ const styles = StyleSheet.create({
   },
   price: { fontSize: 22, fontWeight: "700", color: "#f97316" },
   sharecard: { backgroundColor: "#f5f5f5", borderRadius: 20, padding: 8 },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 10,
-  },
-  variationImage: {
-    width: 100,
-    height: 120,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#eee",
-    marginRight: 10,
-  },
+  sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 10 },
+  variationImage: { width: 100, height: 120, borderRadius: 8, marginRight: 10 },
   variantCard: {
     backgroundColor: "#f7f7f7",
     borderRadius: 10,
@@ -216,24 +250,17 @@ const styles = StyleSheet.create({
   variantText: { fontSize: 16 },
   bottomButtons: {
     marginTop: 20,
-    // position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: "row",
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#eee",
     padding: 12,
-    justifyContent: "space-between",
   },
   wishlistButton: {
     backgroundColor: "#f5f5f5",
     padding: 12,
     borderRadius: 10,
     marginRight: 8,
-    alignItems: "center",
-    justifyContent: "center",
   },
   addToCartBtn: {
     flex: 1,
@@ -250,9 +277,5 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
-  btnText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
+  btnText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });

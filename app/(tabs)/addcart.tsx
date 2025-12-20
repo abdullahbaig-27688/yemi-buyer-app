@@ -6,13 +6,14 @@ import { useLocalSearchParams } from "expo-router";
 import {
   FlatList,
   Image,
-  SafeAreaView,
+  
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   Pressable,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddCart() {
   const router= useRouter();

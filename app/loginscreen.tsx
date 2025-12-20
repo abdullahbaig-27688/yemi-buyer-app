@@ -1,6 +1,7 @@
 import Input from "@/components/Input";
 import PrimaryButton from "@/components/PrimaryButton";
 import SecoundryButton from "@/components/SecoundryButton";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -27,6 +28,16 @@ const LoginScreen = ({ navigation }: any) => {
         { email_or_phone: email, password }
       );
 
+      const token = res.data.token; // or access_token depending on your API
+      if (!token) {
+        Alert.alert("Error", "No token received from server");
+        return;
+      }
+
+      // Save token in AsyncStorage
+      await AsyncStorage.setItem("buyer_token", token); // use the same key your HomeScreen expects
+      console.log("Token saved:", token);
+
       Alert.alert("Success", "Login successful!");
       router.push({ pathname: "/(tabs)" });
     } catch (error: any) {
@@ -34,8 +45,6 @@ const LoginScreen = ({ navigation }: any) => {
         "Login Failed",
         error.response?.data?.message ?? "Invalid credentials"
       );
-
-      // Alert.alert("Error", err.msg);
     } finally {
       setLoading(false);
     }
