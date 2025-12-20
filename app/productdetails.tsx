@@ -20,6 +20,7 @@ import RenderHtml from "react-native-render-html";
 
 export default function ProductDetailScreen() {
   const { name } = useLocalSearchParams<{ name: string }>();
+  const [quantity, setQuantity] = useState(1);
 
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -78,7 +79,7 @@ export default function ProductDetailScreen() {
 
       // 🔥 Backend cart
       await axios.post(
-        `https://yemi.store/api/v1/cart/add?id=${product.id}&quantity=1`,
+        `https://yemi.store/api/v1/cart/add?id=${product.id}&quantity=${quantity}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -94,7 +95,7 @@ export default function ProductDetailScreen() {
           product.images_full_url?.[0]?.path ||
           "https://via.placeholder.com/150",
         price: product.unit_price,
-        quantity: 1,
+        quantity: quantity,
       });
 
       router.push("/addcart");
@@ -148,15 +149,34 @@ export default function ProductDetailScreen() {
       <View style={styles.detailsContainer}>
         <Text style={styles.name}>{product.name}</Text>
 
-        <View style={styles.priceRow}>
-          <Text style={styles.price}>${product.unit_price}</Text>
-          <TouchableOpacity style={styles.sharecard}>
-            <Ionicons
-              name="return-up-forward-outline"
-              size={22}
-              color="#242222"
-            />
-          </TouchableOpacity>
+        <View style={{ marginVertical: 12 }}>
+          {/* Price */}
+          <Text style={styles.price}>Price: ${product.unit_price}</Text>
+
+          {/* Quantity selector */}
+          <View style={styles.quantityRow}>
+            <Text style={styles.totalQuantity}>Quantity: </Text>
+            <Pressable
+              style={styles.qtyButton}
+              onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+            >
+              <Text style={styles.qtyText}>-</Text>
+            </Pressable>
+
+            <Text style={styles.qtyValue}>{quantity}</Text>
+
+            <Pressable
+              style={styles.qtyButton}
+              onPress={() => setQuantity((q) => q + 1)}
+            >
+              <Text style={styles.qtyText}>+</Text>
+            </Pressable>
+          </View>
+
+          {/* Total price */}
+          <Text style={styles.totalPrice}>
+            Total: ${(product.unit_price * quantity).toFixed(2)}
+          </Text>
         </View>
 
         {/* Description */}
@@ -201,7 +221,14 @@ export default function ProductDetailScreen() {
 
         {/* Bottom Buttons */}
         <View style={styles.bottomButtons}>
-          <TouchableOpacity
+          <Pressable style={styles.addToCartBtn} onPress={handleAddToCart}>
+            <Text style={styles.btnText}>Add to Cart</Text>
+          </Pressable>
+
+          <Pressable style={styles.buyNowBtn}>
+            <Text style={styles.btnText}>Buy Now</Text>
+          </Pressable>
+          <Pressable
             onPress={() => setIsWishlisted(!isWishlisted)}
             style={styles.wishlistButton}
           >
@@ -210,16 +237,17 @@ export default function ProductDetailScreen() {
               size={24}
               color={isWishlisted ? "#E53935" : "#555"}
             />
-          </TouchableOpacity>
-
-          <Pressable style={styles.addToCartBtn} onPress={handleAddToCart}>
-            <Text style={styles.btnText}>Add to Cart</Text>
-          </Pressable>
-
-          <Pressable style={styles.buyNowBtn}>
-            <Text style={styles.btnText}>Buy Now</Text>
           </Pressable>
         </View>
+        <Pressable
+          style={styles.chatVendorBtn}
+          onPress={() => {
+            // Navigate to chat screen or open chat with vendor
+            router.push(`/chat?vendorId=${product.vendor_id}`);
+          }}
+        >
+          <Text style={styles.btnText}>Chat with Vendor</Text>
+        </Pressable>
       </View>
     </ScrollView>
   );
@@ -250,6 +278,7 @@ const styles = StyleSheet.create({
   variantText: { fontSize: 16 },
   bottomButtons: {
     marginTop: 20,
+    gap:10,
     flexDirection: "row",
     backgroundColor: "#fff",
     borderTopWidth: 1,
@@ -278,4 +307,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   btnText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  quantityRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 8,
+  },
+  qtyButton: {
+    backgroundColor: "#eee",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  qtyText: { fontSize: 18, fontWeight: "700" },
+  qtyValue: { marginHorizontal: 12, fontSize: 16, fontWeight: "700" },
+  totalQuantity: {
+    marginTop: 6,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#f97316",
+  },
+  totalPrice: {
+    marginTop: 6,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#f97316",
+  },
+  chatVendorBtn: {
+    flex: 1,
+    backgroundColor: "#f97316",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    marginLeft: 8,
+  },
 });

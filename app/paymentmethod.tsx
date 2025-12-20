@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -16,52 +16,86 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function PaymentScreen() {
+  const [shippingInfo, setShippingInfo] = useState(null);
+  const [contactInfo, setContactInfo] = useState({
+    name: "",
+    phone: "",
+    email: "",
+  });
+  const [cartItems, setCartItems] = useState([]);
+
   const [selectedOption, setSelectedOption] = useState("Standard");
   const [voucherVisible, setVoucherVisible] = useState(false);
-
-  // ======= NEW: payment-flow states =======
-  // null | 'choose' | 'select' | 'progress' | 'error' | 'done'
   const [paymentStep, setPaymentStep] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal] = useState(false);
 
-  // ======= existing items =======
-  const items = [
-    {
-      id: "1",
-      image: "https://picsum.photos/100/100?1",
-      desc: "Lorem ipsum dolor sit amet consectetur.",
-      price: 17.0,
-      quantity: 1,
-    },
-    {
-      id: "2",
-      image: "https://picsum.photos/100/100?2",
-      desc: "Lorem ipsum dolor sit amet consectetur.",
-      price: 17.0,
-      quantity: 1,
-    },
-    {
-      id: "3",
-      image: "https://picsum.photos/100/100?3",
-      desc: "Another cute item for testing.",
-      price: 20.0,
-      quantity: 2,
-    },
-  ];
-
-  // cards to show in the choose-card modal
+  // Cards example
   const cards = [
     { id: "c1", brand: "Mastercard", last4: "1234" },
     { id: "c2", brand: "Visa", last4: "5678" },
   ];
 
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Shipping Info
+        const storedShipping = await AsyncStorage.getItem("shipping_address");
+        if (storedShipping) {
+          setShippingInfo(JSON.parse(storedShipping));
+        } else {
+          setShippingInfo({
+            address: "",
+            city: "",
+            postcode: "",
+            country: "",
+            phone: "",
+          });
+        }
+
+        // Contact Info
+        const storedContact = await AsyncStorage.getItem("contact_info");
+        if (storedContact) {
+          const parsed = JSON.parse(storedContact);
+          setContactInfo({
+            name: parsed.name,
+            phone: parsed.phone,
+            email: parsed.email,
+          });
+        } else {
+          setContactInfo({ name: "", phone: "", email: "" });
+        }
+
+        // Cart Items
+        const storedCart = await AsyncStorage.getItem("cart_items");
+        if (storedCart) setCartItems(JSON.parse(storedCart));
+        else setCartItems([]);
+      } catch (err) {
+        console.log("Error fetching data:", err);
+        setShippingInfo({
+          address: "",
+          city: "",
+          postcode: "",
+          country: "",
+          phone: "",
+        });
+        setContactInfo({ name: "", phone: "", email: "" });
+        setCartItems([]);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const total = cartItems.reduce((sum, it) => sum + it.price * it.quantity, 0);
+
   const ShippingOption = ({ type, days, price }) => {
     const selected = selectedOption === type;
     return (
-      <TouchableOpacity
+      <Pressable
         style={[styles.optionRow, selected && styles.optionSelected]}
         onPress={() => setSelectedOption(type)}
       >
@@ -76,7 +110,7 @@ export default function PaymentScreen() {
           <Text style={styles.optionDays}>{days}</Text>
           <Text style={styles.optionPrice}>{price}</Text>
         </View>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -103,8 +137,6 @@ export default function PaymentScreen() {
     </View>
   );
 
-  const total = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
-
   const startPayment = () => {
     setPaymentStep("progress");
     setTimeout(() => {
@@ -120,12 +152,14 @@ export default function PaymentScreen() {
       <View style={styles.sectionCard}>
         <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Shipping Address</Text>
-          <TouchableOpacity style={styles.editBtn}>
+          <Pressable style={styles.editBtn}>
             <Ionicons name="pencil" size={16} color="#fff" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
         <Text style={styles.sectionText}>
-          25, Duyen 3, Xa Thien Ward, Xa Phu, District 2, Ho Chi Minh City
+          {shippingInfo
+            ? `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.postcode}, ${shippingInfo.country}`
+            : "No shipping info saved"}
         </Text>
       </View>
 
@@ -133,27 +167,34 @@ export default function PaymentScreen() {
       <View style={styles.sectionCard}>
         <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Contact Information</Text>
-          <TouchableOpacity style={styles.editBtn}>
+          <Pressable style={styles.editBtn}>
             <Ionicons name="pencil" size={16} color="#fff" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
-        <Text style={styles.sectionText}>+69 123 0000</Text>
-        <Text style={styles.sectionText}>andresinango@example.com</Text>
+        <Text style={styles.sectionText}>
+          {contactInfo.name || "No name saved"}
+        </Text>
+        <Text style={styles.sectionText}>
+          {contactInfo.phone || "No phone saved"}
+        </Text>
+        <Text style={styles.sectionText}>
+          {contactInfo.email || "No email saved"}
+        </Text>
       </View>
 
       {/* Items List */}
       <View style={styles.itemHeader}>
-        <Text style={styles.sectionTitle}>Items ({items.length})</Text>
-        <TouchableOpacity
+        <Text style={styles.sectionTitle}>Items ({cartItems.length})</Text>
+        <Pressable
           style={styles.addVoucherBtn}
           onPress={() => setVoucherVisible(true)}
         >
           <Text style={styles.addVoucherText}>Add Voucher</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <FlatList
-        data={items}
+        data={cartItems}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         scrollEnabled={false}
@@ -189,40 +230,26 @@ export default function PaymentScreen() {
       {/* Total */}
       <View style={styles.totalRow}>
         <Text style={styles.totalText}>Total ${total.toFixed(2)}</Text>
-
-        <TouchableOpacity
-          style={styles.payButton}
-          onPress={() => setShowModal(true)}
-        >
+        <TouchableOpacity style={styles.payButton} onPress={startPayment}>
           <Text style={styles.payText}>Pay</Text>
         </TouchableOpacity>
-
       </View>
 
-      {/* ======== 6 MODALS ======== */}
+      {/* ===== Modals (Voucher, Payment Flow) ===== */}
 
-      {/* 1️⃣ Voucher Modal */}
-      <Modal
-        visible={voucherVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setVoucherVisible(false)}
-      >
-
+      {/* Voucher Modal */}
+      <Modal visible={voucherVisible} transparent animationType="slide">
         <TouchableWithoutFeedback onPress={() => setVoucherVisible(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalSheet}>
               <Text style={styles.header}>Active Vouchers</Text>
-              {[{
-                title: "First Purchase",
-                desc: "5% off your next order",
-                date: "Valid Until 6.8.20",
-              },
-              {
-                title: "Gift From Customer Care",
-                desc: "15% off your next purchase",
-                date: "Valid Until 6.8.20",
-              }].map((v, i) => (
+              {[
+                {
+                  title: "First Purchase",
+                  desc: "5% off your next order",
+                  date: "Valid Until 6.8.20",
+                },
+              ].map((v, i) => (
                 <View key={i} style={styles.voucherCard}>
                   <View style={styles.voucherInfo}>
                     <Text style={styles.voucherTitle}>{v.title}</Text>
@@ -239,12 +266,14 @@ export default function PaymentScreen() {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* 2️⃣ Choose / Add Card */}
-
-      <Modal visible={paymentStep === "choose"} transparent animationType="slide">
-
+      {/* Payment Modals */}
+      {/* Choose Card */}
+      <Modal
+        visible={paymentStep === "choose"}
+        transparent
+        animationType="slide"
+      >
         <TouchableWithoutFeedback onPress={() => setPaymentStep(null)}>
-
           <View style={styles.overlay}>
             <View style={styles.sheet}>
               <Text style={styles.modalTitle}>Payment Methods</Text>
@@ -265,24 +294,18 @@ export default function PaymentScreen() {
                     </Text>
                   </TouchableOpacity>
                 )}
-                ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
               />
-              <TouchableOpacity
-                style={styles.addBtn}
-                onPress={() => alert("Open add card flow")}
-              >
-                <Ionicons name="add" size={20} color="#fff" />
-                <Text style={{ color: "#fff", marginLeft: 8, fontWeight: "600" }}>
-                  Add Card
-                </Text>
-              </TouchableOpacity>
             </View>
           </View>
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* 3️⃣ Select Card Confirmation */}
-      <Modal visible={paymentStep === "select"} transparent animationType="fade">
+      {/* Select Card */}
+      <Modal
+        visible={paymentStep === "select"}
+        transparent
+        animationType="fade"
+      >
         <TouchableWithoutFeedback onPress={() => setPaymentStep(null)}>
           <View style={styles.overlayCenter}>
             <View style={styles.box}>
@@ -301,8 +324,12 @@ export default function PaymentScreen() {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* 4️⃣ Payment Progress */}
-      <Modal visible={paymentStep === "progress"} transparent animationType="fade">
+      {/* Payment Progress */}
+      <Modal
+        visible={paymentStep === "progress"}
+        transparent
+        animationType="fade"
+      >
         <View style={styles.overlayCenter}>
           <View style={styles.box}>
             <ActivityIndicator size="large" color="#FF6C44" />
@@ -311,19 +338,24 @@ export default function PaymentScreen() {
         </View>
       </Modal>
 
-      {/* 5️⃣ Payment Failed */}
+      {/* Payment Error */}
       <Modal visible={paymentStep === "error"} transparent animationType="fade">
         <View style={styles.overlayCenter}>
           <View style={styles.box}>
             <Text style={styles.modalTitle}>Payment Failed</Text>
-            <Text style={{ textAlign: "center", color: "#666", marginVertical: 8 }}>
+            <Text
+              style={{ textAlign: "center", color: "#666", marginVertical: 8 }}
+            >
               Please try again or choose another payment method.
             </Text>
             <TouchableOpacity style={styles.primaryBtn} onPress={startPayment}>
               <Text style={styles.primaryText}>Try Again</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.primaryBtn, { backgroundColor: "#ccc", marginTop: 10 }]}
+              style={[
+                styles.primaryBtn,
+                { backgroundColor: "#ccc", marginTop: 10 },
+              ]}
               onPress={() => setPaymentStep(null)}
             >
               <Text style={{ color: "#000", fontWeight: "700" }}>Cancel</Text>
@@ -332,13 +364,15 @@ export default function PaymentScreen() {
         </View>
       </Modal>
 
-      {/* 6️⃣ Payment Success */}
+      {/* Payment Success */}
       <Modal visible={paymentStep === "done"} transparent animationType="fade">
         <View style={styles.overlayCenter}>
           <View style={styles.box}>
             <Ionicons name="checkmark-circle" size={60} color="green" />
             <Text style={styles.modalTitle}>Transaction Complete</Text>
-            <Text style={{ marginBottom: 12, textAlign: "center", color: "#666" }}>
+            <Text
+              style={{ marginBottom: 12, textAlign: "center", color: "#666" }}
+            >
               Thank you — your order is being processed.
             </Text>
             <TouchableOpacity
@@ -350,65 +384,11 @@ export default function PaymentScreen() {
           </View>
         </View>
       </Modal>
-
-      {/* Shipping Address Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showModal}
-        onRequestClose={() => setShowModal(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setShowModal(false)}>
-          <View style={styles.backdrop}>
-            {/* Stop touch propagation inside content */}
-            <TouchableWithoutFeedback>
-              <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                style={styles.modalContent}
-              >
-                <Text style={styles.title}>Shipping Address</Text>
-
-                <Text style={styles.label}>Country</Text>
-
-                <View style={{justifyContent:'space-between', alignContent:'center', flexDirection:'row'}}>
-                  <Text>India</Text>
-                  <Pressable style={styles.iconecolor}>
-                    <Ionicons name="arrow-forward" size={16} color="#fff" />
-                  </Pressable>
-
-                </View>
-
-
-
-
-                <Text style={styles.label}>Address</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Magadi Main Rd, next to Prasanna Theatre"
-                />
-
-                <Text style={styles.label}>Town / City</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Bengaluru, Karnataka 560023"
-                />
-
-                <Text style={styles.label}>Postcode</Text>
-                <TextInput style={styles.input} placeholder="70000" keyboardType="numeric" />
-
-                <TouchableOpacity style={styles.saveBtn} onPress={() => setShowModal(false)}>
-                  <Text style={styles.saveText}>Save Changes</Text>
-                </TouchableOpacity>
-              </KeyboardAvoidingView>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-
     </ScrollView>
   );
 }
 
+// ===== Styles =====
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff", padding: 16 },
   header: { fontSize: 24, fontWeight: "700", marginVertical: 6 },
@@ -441,8 +421,19 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   addVoucherText: { color: "#FF6C44", fontWeight: "600" },
-  itemRow: { flexDirection: "row", alignItems: "center", marginBottom: 12, marginTop: 8 },
-  itemImage: { width: 60, height: 60, borderRadius: 10, marginRight: 12, backgroundColor: "#eee" },
+  itemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  itemImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    marginRight: 12,
+    backgroundColor: "#eee",
+  },
   qtyBadge: {
     position: "absolute",
     top: -6,
@@ -538,8 +529,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   applyText: { color: "#fff", fontWeight: "600" },
-
-  // ======= NEW modal styles =======
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -581,64 +570,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#fafafa",
   },
-  addBtn: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 20,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: "#FF6C44",
-  },
   primaryBtn: {
     backgroundColor: "#FF6C44",
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 30,
-    marginTop: 12,
-    alignItems: "center",
+    marginTop: 10,
   },
-  primaryText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 16,
-  },
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  title: { fontSize: 18, fontWeight: "bold", marginBottom: 16 },
-  label: { marginTop: 12, marginBottom: 4, fontWeight: "600" },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  saveBtn: {
-    marginTop: 20,
-    backgroundColor: "orange",
-    padding: 14,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  saveText: { color: "#fff", fontWeight: "bold" },
-  iconecolor: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#a3a09dff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
+  primaryText: { color: "#fff", fontWeight: "700", fontSize: 16 },
 });
-
