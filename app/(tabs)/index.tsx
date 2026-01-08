@@ -4,10 +4,12 @@ import axios from "axios";
 import { ImageBackground } from "expo-image";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
+
 import {
   Dimensions,
   FlatList,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,6 +18,7 @@ import {
   View,
 } from "react-native";
 import Swiper from "react-native-swiper";
+import SideBar from "@/components/VerticalMenu";
 
 const { width } = Dimensions.get("window");
 
@@ -24,13 +27,15 @@ const BANNERS = [
     id: "1",
     title: "Big Sale",
     subtitle: "Up to 50% off",
-    image: "https://images.unsplash.com/photo-1521334884684-d80222895322",
+    image:
+      "https://www.yemi.store/storage/app/public/banner/2025-11-21-69209490e9e54.webp",
   },
   {
     id: "2",
     title: "Flash Deals",
     subtitle: "Limited Time Offer",
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+    image:
+      "https://www.yemi.store/storage/app/public/banner/2025-11-21-692094d9b3925.webp",
   },
 ];
 
@@ -46,6 +51,25 @@ export default function HomeScreen() {
   const [brands, setBrands] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const menuItems = [
+    { id: "1", label: "Home", icon: "home-outline", route: "/(tabs)" },
+    { id: "2", label: "Profile Info", icon: "person-outline", route: "/profile" },
+    { id: "3", label: "My Orders", icon: "cart-outline", route: "/orders" },
+    {
+      id: "4",
+      label: "Settings",
+      icon: "settings-outline",
+      route: "/settings",
+    },
+    {
+      id: "5",
+      label: "Logout",
+      icon: "log-out-outline",
+      onPress: () => alert("Logged out!"),
+    },
+  ];
 
   useEffect(() => {
     const fetchAllSections = async () => {
@@ -118,6 +142,7 @@ export default function HomeScreen() {
         console.log("New Arrivals:", newArrRes.data);
         console.log("Discounted:", discRes.data);
         console.log("Bestsellers:", bestRes.data);
+        console.log("Top Rated:", topRes.data);
         console.log("Just For You:", justRes.data);
         console.log("Most Demanded:", mostRes.data);
         console.log("Categories:", catRes.data);
@@ -142,56 +167,117 @@ export default function HomeScreen() {
     return <Text style={[styles.centered, { color: "red" }]}>{error}</Text>;
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Shop</Text>
-        <View style={styles.inputview}>
-          <TextInput placeholder="Search" />
-          <Ionicons name="camera-outline" size={26} />
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Pressable onPress={() => setSidebarOpen(true)}>
+            <Ionicons name="menu-outline" size={30} />
+          </Pressable>
+          <Text style={styles.headerTitle}>Shop</Text>
+          <View style={styles.inputview}>
+            <TextInput placeholder="Search" />
+            <Ionicons name="camera-outline" size={26} />
+          </View>
         </View>
-      </View>
-      {/* Banner */}
-      <View style={styles.bannerWrapper}>
-        <Swiper autoplay autoplayTimeout={3} showsPagination>
-          {BANNERS.map((item) => (
-            <ImageBackground
-              key={item.id}
-              source={{ uri: item.image }}
-              style={styles.bannerSlide}
-              contentFit="cover"
-            >
-              <Text style={styles.bannerTitle}>{item.title}</Text>
-              <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
-            </ImageBackground>
-          ))}
-        </Swiper>
-      </View>
-      {/* Product Sections */}
-      <Section title="Categories" data={categories} isCategory />
-      <Section title="Brands" data={brands} isBrand />
-      <Section title="Latest Products" data={latestProducts} />
-      {/* <Section title="New Arrivals" data={newArrivals} /> */}
-      <Section title="New Arrivals" data={discountedProducts} />
-      <Section title="Best sellings" data={bestsellers} />
-      <Section title="Top Rated" data={topRated} />
-      <Section title="Most Popular" data={mostDemanded} />
-      <Section title="Just For You" data={justForYou} />
-    </ScrollView>
+        {/* Banner */}
+        <View style={styles.bannerWrapper}>
+          <Swiper autoplay autoplayTimeout={3} showsPagination>
+            {BANNERS.map((item) => (
+              <ImageBackground
+                key={item.id}
+                source={{ uri: item.image }}
+                style={styles.bannerSlide}
+                imageStyle={{ borderRadius: 15 }} // Rounded corners on image
+              >
+                {/* Overlay to make text readable */}
+                <View style={styles.bannerOverlay}>
+                  <Text style={styles.bannerTitle}>{item.title}</Text>
+                  <Text style={styles.bannerSubtitle}>{item.subtitle}</Text>
+                </View>
+              </ImageBackground>
+            ))}
+          </Swiper>
+        </View>
+
+        {/* Product Sections */}
+        <Section title="Categories" data={categories} isCategory />
+        <Section title="Brands" data={brands} isBrand />
+        <Section title="Latest Products" data={latestProducts} />
+        {/* <Section title="New Arrivals" data={newArrivals} /> */}
+        <Section title="New Arrivals" data={discountedProducts} />
+        <Section title="Best sellings" data={bestsellers} />
+        <Section title="Top Rated" data={bestsellers} />
+        <Section title="Most Popular" data={bestsellers} />
+        <Section
+          title="Just For You"
+          data={justForYou}
+          sectionKey="just-for-you"
+        />
+      </ScrollView>
+      {/* Sidebar Modal */}
+      <Modal
+        visible={sidebarOpen}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setSidebarOpen(false)}
+      >
+        {sidebarOpen && (
+          <View style={styles.sidebarOverlay}>
+            {/* Sidebar itself */}
+            <SideBar
+              menuItems={menuItems}
+              onClose={() => setSidebarOpen(false)}
+            />
+
+            {/* Clickable area outside sidebar to close it */}
+            <Pressable
+              style={{ flex: 1 }}
+              onPress={() => setSidebarOpen(false)}
+            />
+          </View>
+        )}
+      </Modal>
+    </View>
   );
 }
 
 /* ---------------- SECTION COMPONENT ---------------- */
 
-function Section({ title, data, isCategory, isBrand }: any) {
+function Section({ title, data, sectionKey, isCategory, isBrand }: any) {
   if (!data?.length) return null;
+
+  const handleViewAll = () => {
+    switch (sectionKey) {
+      case "just-for-you":
+        router.push("/justforyou");
+        break;
+
+      case "best-selling":
+        router.push("/flashdiscount");
+        break;
+
+      case "top-rated":
+        router.push("/mostdemanded");
+        break;
+
+      default:
+        break;
+    }
+  };
 
   return (
     <View style={styles.wrapper}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+
+        <Pressable onPress={handleViewAll}>
+          <Text style={styles.viewAll}>View All</Text>
+        </Pressable>
+      </View>
+
       <FlatList
         horizontal
-        contentContainerStyle={{ alignItems: "center" }}
         data={data}
         keyExtractor={(item) => item.id.toString()}
         showsHorizontalScrollIndicator={false}
@@ -203,30 +289,18 @@ function Section({ title, data, isCategory, isBrand }: any) {
                 params: { name: item.name },
               })
             }
-            style={
-              isCategory
-                ? styles.catCardHorizontal
-                : isBrand
-                ? styles.brandCardHorizontal
-                : styles.saleCard
-            }
+            style={styles.saleCard}
           >
             <Image
               source={{
                 uri:
-                  item.icon_full_url?.path ||
-                  item.image_full_url?.path ||
                   item.thumbnail_full_url?.path ||
+                  item.image_full_url?.path ||
                   "https://via.placeholder.com/150",
               }}
-              style={isCategory ? styles.tileHorizontal : styles.saleImg}
+              style={styles.saleImg}
             />
-            <Text
-              numberOfLines={1}
-              style={isCategory ? { fontWeight: "700", marginTop: 5 } : {}}
-            >
-              {item.name}
-            </Text>
+            <Text numberOfLines={1}>{item.name}</Text>
           </Pressable>
         )}
       />
@@ -262,12 +336,29 @@ const styles = StyleSheet.create({
   bannerSlide: {
     width: width - 30,
     height: 180,
-    justifyContent: "center",
+    justifyContent: "flex-end", // Push text to bottom
     padding: 20,
     borderRadius: 15,
+    overflow: "hidden", // Important for rounded corners
   },
-  bannerTitle: { fontSize: 22, color: "#fff", fontWeight: "700" },
-  bannerSubtitle: { fontSize: 16, color: "#fff" },
+
+  bannerOverlay: {
+    // backgroundColor: "rgba(0,0,0,0.35)", // semi-transparent dark overlay
+    padding: 10,
+    borderRadius: 10,
+  },
+
+  bannerTitle: {
+    fontSize: 22,
+    color: "#fff",
+    fontWeight: "700",
+  },
+
+  bannerSubtitle: {
+    fontSize: 16,
+    color: "#fff",
+    marginTop: 2,
+  },
 
   sectionWrapper: { marginBottom: 20 },
   sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 10 },
@@ -330,5 +421,36 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 10,
     resizeMode: "cover",
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  viewAll: {
+    color: "#FF5722",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  sidebarOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: "100%",
+    flexDirection: "row", // sidebar + rest of screen
+    zIndex: 1000,
+  },
+
+  sidebarContainer: {
+    width: 250,
+    height: "100%",
+    backgroundColor: "#fff",
+    paddingTop: 50,
+    paddingHorizontal: 15,
+    borderRightWidth: 1,
+    borderRightColor: "#ddd",
   },
 });

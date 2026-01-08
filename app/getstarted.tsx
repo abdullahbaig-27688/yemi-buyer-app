@@ -56,7 +56,7 @@ const GetStarted = () => {
         <View style={styles.buttonRow}>
           <SecoundryButton
             title="I already have an account"
-            onPress={() => router.replace("/loginscreen")}
+            onPress={() => router.replace("/(tabs)")}
           />
           <Image
             source={require("../assets/images/Button.png")}
